@@ -1,0 +1,38 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table polls {
+  poll_id bigserial [primary key]
+  question text [not null]
+  owner varchar [not null]
+  created_at timestamptz [not null,default:`now()`]
+}
+
+Table options {
+  option_id bigserial [primary key]
+  option_value text [not null]
+  poll_id bigint [not null]
+}
+
+Table votes {
+  vote_id bigserial [primary key]
+  option_id bigint [not null]
+  voter varchar [not null]
+}
+
+
+Table users {
+  username varchar [primary key]
+  role varchar [not null, default: 'voter']
+  hashed_password varchar [not null]
+  full_name varchar [not null]
+  email varchar [unique, not null]
+  is_email_verified bool [not null, default: false]
+  password_changed_at timestamptz [not null, default: '0001-01-01']
+  created_at timestamptz [not null, default: `now()`]
+}
+
+
+Ref: options.poll_id > polls.poll_id
+Ref: users.username < polls.owner
+Ref: users.username < votes.voter

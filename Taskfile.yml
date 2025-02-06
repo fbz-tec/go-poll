@@ -1,0 +1,30 @@
+version: "3"
+vars:
+  DB_URL: "postgresql://postgres:rocks@localhost:5432/poll?sslmode=disable"
+
+tasks:
+
+  db_schema:
+    desc: "Generate db schema from dbml"
+    cmds:
+    - docker run --rm -v $(pwd)/docs:/app dbml-cli:latest dbml2sql --postgres -o schema.sql db.dbml
+
+  migrateup:
+    desc: "Migrate schema up"
+    cmds:
+      - migrate -path db/migration -database "{{.DB_URL}}" -verbose up
+
+  migratedown:
+    desc: "Migrate schema down"
+    cmds:
+      - migrate -path db/migration -database "{{.DB_URL}}" -verbose down
+  
+  sqlc:
+    desc: "Generate go sql files"
+    cmds:
+      - sqlc generate
+
+  run:
+    desc: "Run the server"
+    cmds:
+      - go run main.go
