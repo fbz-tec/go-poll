@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/fayca121/go-poll/api"
-	db "github.com/fayca121/go-poll/db/sqlc"
-	"github.com/fayca121/go-poll/util"
+	"github.com/fbz-tec/go-poll/api"
+	db "github.com/fbz-tec/go-poll/db/sqlc"
+	"github.com/fbz-tec/go-poll/util"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

@@ -1,7 +1,7 @@
 package api
 
 import (
-	db "github.com/fayca121/go-poll/db/sqlc"
+	db "github.com/fbz-tec/go-poll/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
 

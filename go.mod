@@ -1,4 +1,4 @@
-module github.com/fayca121/go-poll
+module github.com/fbz-tec/go-poll
 
 go 1.23.6
 

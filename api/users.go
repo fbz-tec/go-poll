@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	db "github.com/fayca121/go-poll/db/sqlc"
-	"github.com/fayca121/go-poll/util"
+	db "github.com/fbz-tec/go-poll/db/sqlc"
+	"github.com/fbz-tec/go-poll/util"
 	"github.com/gin-gonic/gin"
 )
 
