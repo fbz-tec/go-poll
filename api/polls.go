@@ -10,7 +10,7 @@ import (
 // ----------------------- ListPolls API -----------------------
 type ListPollsRequest struct {
 	PageId   int32 `form:"page" binding:"required,min=1"`
-	pageSize int32 `form:"page_size" binding:"required,min=5"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=20"`
 }
 
 func (server *Server) ListPollsHandler(ctx *gin.Context) {
@@ -20,8 +20,8 @@ func (server *Server) ListPollsHandler(ctx *gin.Context) {
 		return
 	}
 	args := db.ListPollsParams{
-		Limit:  request.pageSize,
-		Offset: (request.PageId - 1) * request.pageSize,
+		Limit:  request.PageSize,
+		Offset: (request.PageId - 1) * request.PageSize,
 	}
 	polls, err := server.store.ListPolls(ctx, args)
 	if err != nil {
@@ -34,7 +34,7 @@ func (server *Server) ListPollsHandler(ctx *gin.Context) {
 
 // ----------------------- GetPoll API -----------------------
 type getPollRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID int64 `uri:"pollId" binding:"required,min=1"`
 }
 
 func (server *Server) GetPollHander(ctx *gin.Context) {
@@ -57,14 +57,57 @@ func (server *Server) GetPollHander(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+	response := struct {
+		db.Poll
+		Options []db.Option `json:"options"`
+	}{
+		Poll:    poll,
+		Options: options,
+	}
 
-	optionItems := make([]db.Option, len(options))
+	ctx.JSON(http.StatusOK, response)
 
-	for i, opt := range options {
-		optionItems[i] = db.Option{
-			OptionID:    opt.OptionID,
-			OptionValue: opt.OptionValue,
+}
+
+// ----------------------- createPoll API -----------------------}
+type createPollRequest struct {
+	Question string   `json:"question"`
+	Owner    string   `json:"owner"`
+	Options  []string `json:"options"`
+}
+
+func (server *Server) CreatePollHander(ctx *gin.Context) {
+
+	var request createPollRequest
+
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	//todo: use transaction
+	poll, err := server.store.CreatePoll(ctx, db.CreatePollParams{
+		Question: request.Question,
+		Owner:    request.Owner,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	options := make([]db.Option, len(request.Options))
+
+	for _, option := range request.Options {
+		opt, err := server.store.CreateOption(ctx, db.CreateOptionParams{
+			PollID:      poll.PollID,
+			OptionValue: option,
+		})
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
 		}
+		options = append(options, opt)
 	}
 
 	response := struct {
@@ -72,14 +115,8 @@ func (server *Server) GetPollHander(ctx *gin.Context) {
 		Options []db.Option `json:"options"`
 	}{
 		Poll:    poll,
-		Options: optionItems,
+		Options: options,
 	}
 
-	ctx.JSON(http.StatusOK, response)
-
-}
-
-// ----------------------- createPoll API -----------------------
-func (server *Server) CreatePollHander(ctx *gin.Context) {
-	ctx.JSON(http.StatusNoContent, simpleResponse("not implemented"))
+	ctx.JSON(http.StatusCreated, response)
 }
