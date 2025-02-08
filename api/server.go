@@ -24,12 +24,12 @@ func NewServer(store *db.Queries) (*Server, error) {
 			polls.GET("", server.ListPollsHandler)
 			polls.POST("", server.CreatePollHander)
 			polls.GET(":pollId", server.GetPollHander)
-			polls.GET(":pollId/votes", nil)
-			polls.GET(":pollId/results", nil)
+			polls.GET(":pollId/votes", server.ListVotesHandler)
+			polls.GET(":pollId/results", server.GetVoteResultHandler)
 		}
 		votes := v1.Group("votes")
 		{
-			votes.POST("", nil)
+			votes.POST("", server.CreateVoteHandler)
 		}
 		users := v1.Group("users")
 		{

@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createVote = `-- name: CreateVote :one
@@ -65,9 +63,9 @@ func (q *Queries) GetTotalVotes(ctx context.Context, pollID int64) ([]GetTotalVo
 }
 
 const getVotesByPoll = `-- name: GetVotesByPoll :many
-select vote_id, v.option_id, voter, o.option_id, option_value, poll_id 
+select vote_id, v.option_id, voter, option_value, poll_id 
 from votes v 
-left join options o on v.option_id = o.option_id 
+inner join options o on v.option_id = o.option_id 
 where o.poll_id = $1
 limit $2
 offset $3
@@ -80,12 +78,11 @@ type GetVotesByPollParams struct {
 }
 
 type GetVotesByPollRow struct {
-	VoteID      int64       `json:"vote_id"`
-	OptionID    int64       `json:"option_id"`
-	Voter       string      `json:"voter"`
-	OptionID_2  pgtype.Int8 `json:"option_id_2"`
-	OptionValue pgtype.Text `json:"option_value"`
-	PollID      pgtype.Int8 `json:"poll_id"`
+	VoteID      int64  `json:"vote_id"`
+	OptionID    int64  `json:"option_id"`
+	Voter       string `json:"voter"`
+	OptionValue string `json:"option_value"`
+	PollID      int64  `json:"poll_id"`
 }
 
 func (q *Queries) GetVotesByPoll(ctx context.Context, arg GetVotesByPollParams) ([]GetVotesByPollRow, error) {
@@ -101,7 +98,6 @@ func (q *Queries) GetVotesByPoll(ctx context.Context, arg GetVotesByPollParams) 
 			&i.VoteID,
 			&i.OptionID,
 			&i.Voter,
-			&i.OptionID_2,
 			&i.OptionValue,
 			&i.PollID,
 		); err != nil {

@@ -6,9 +6,9 @@ insert into votes (
 ) returning *;
 
 -- name: GetVotesByPoll :many
-select * 
+select vote_id, v.option_id, voter, option_value, poll_id 
 from votes v 
-left join options o on v.option_id = o.option_id 
+inner join options o on v.option_id = o.option_id 
 where o.poll_id = $1
 limit $2
 offset $3;
